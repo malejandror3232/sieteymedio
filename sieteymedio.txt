@@ -1,0 +1,572 @@
+#include <iostream>
+#include <conio2.h>
+#include <ctime>
+
+using namespace std;
+
+int main (int argc, char *argv[]) {
+	
+	//Declaracion e inicializacion de variables
+	srand(time(NULL));
+	
+	float delay=0.5f;
+	clock_t t1, t2, tiempo;
+	tiempo=CLOCKS_PER_SEC*delay;
+	t1=0;
+	t2=0;
+	
+	bool play=true;
+	int fila=0;
+	int columna=0;
+	
+	//Se crea la carta invertida
+	string cartaInvertida="";
+	cartaInvertida+=" ___________ \n";
+	cartaInvertida+="|           |\n";
+	cartaInvertida+="| ######### |\n";
+	cartaInvertida+="| ######### |\n";
+	cartaInvertida+="| ######### |\n";
+	cartaInvertida+="| ######### |\n";
+	cartaInvertida+="| ######### |\n";
+	cartaInvertida+="|___________|\n";
+	
+	//Se crea el mazo de 40 cartas
+	string mazo[4][10];
+	
+	string modelo="";
+	string modeloAux="";
+	
+	modelo+=" ___________ \n";
+	modelo+="|           |\n";
+	modelo+="|           |\n";
+	modelo+="|           |\n";
+	modelo+="|           |\n";
+	modelo+="|           |\n";
+	modelo+="|           |\n";
+	modelo+="|___________|\n";
+	
+	string figuraPez="";
+	figuraPez+=" ___________ \n";
+	figuraPez+="|           |\n";
+	figuraPez+="|       O  o|\n";
+	figuraPez+="|    _\\_  o |\n";  
+	figuraPez+="| \\\\/  o\\ . |\n";
+	figuraPez+="| //\\___=   |\n";
+	figuraPez+="|    ''     |\n";
+	figuraPez+="|___________|\n";
+	
+	string figuraConejo="";
+	figuraConejo+=" ___________ \n";
+	figuraConejo+="|           |\n";
+	figuraConejo+="|           |\n";
+	figuraConejo+="|  (\\__/)   |\n";
+	figuraConejo+="|  (='.')   |\n";
+	figuraConejo+="|  (_(\")(\") |\n";
+	figuraConejo+="|           |\n";
+	figuraConejo+="|___________|\n";
+	
+	string figuraBuho="";
+	figuraBuho+=" ___________ \n";
+	figuraBuho+="|           |\n";
+	figuraBuho+="|   .___.   |\n";
+	figuraBuho+="|   {o,o}   |\n";
+	figuraBuho+="|   /)__)   |\n";
+	figuraBuho+="|   -\"-\"-   |\n";
+	figuraBuho+="|           |\n";
+	figuraBuho+="|___________|\n";
+	
+	//oro=184
+	//copa=190
+	//espada=206
+	//basto=244
+	
+	//Codigos ASCII correspondientes a los simbolos de cada uno de los 4 palos
+	int codigos[4]={184,190,206,244};
+	
+	//Matriz que indica la posicion en el string modelo que debe reemplazarle con el simbolo 
+	//del palo segun cada numero de carta (1-7), excepto las figuras que tienen un patron propio
+	int coordenadas[7][10]={
+		{0,0,0,0,62,0,0,0,0,0},
+		{0,34,0,0,0,0,0,0,90,0},
+		{0,34,0,0,62,0,0,0,90,0},
+		{31,0,37,0,0,0,0,87,0,93},
+		{31,0,37,0,62,0,0,87,0,93},
+		{31,0,37,59,0,65,0,87,0,93},
+		{31,0,37,59,0,65,76,87,0,93},
+	};
+	
+	string numeros[10]={"1","2","3","4","5","6","7","10","11","12"};
+	
+	for (int i=0;i<4;i++){
+		
+		for (int j=0;j<10;j++){
+			
+			modeloAux=modelo;
+			
+			char c=(char)codigos[i];		
+			string s="";
+			s+=c;
+			
+			if (j<7){
+				
+				modelo.replace(15,1,numeros[j]);
+				modelo.replace(109,1,numeros[j]);
+				
+				for (int m=0;m<10;m++){
+					
+					if (coordenadas[j][m]>0){
+						
+						modelo.replace(coordenadas[j][m],1,s);						
+					}
+				}
+				
+			} else {
+				
+				switch(j){
+					
+				case 7:
+					modelo=figuraPez;
+					break;
+					
+				case 8:
+					modelo=figuraConejo;
+					break;
+					
+				case 9: 					
+					modelo=figuraBuho;
+					break;										
+				}
+				
+				modelo.replace(15,2,numeros[j]);
+				modelo.replace(108,2,numeros[j]);
+				
+				modelo.replace(29,1,s);
+				modelo.replace(95,1,s);	
+			}
+			
+			mazo[i][j]=modelo;
+			modelo=modeloAux;		
+		}	
+	}
+	
+	//Se crea la matriz de booleanos que indica que cartas salieron para no repetir
+	bool cartas[4][10];
+	
+	for(int i=0;i<4;i++){
+		for (int j=0;j<10;j++){
+			cartas[i][j]=false;			
+		}
+	}
+	
+	//Matriz de probabilidades para la IA de la computadora
+	int valorProb=0;
+	int numero=0;
+	
+	float probabilidades[2][15]={
+		{0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7},
+		{100,95,90,85,80,75,70,65,60,55,40,30,20,15,2}
+	};
+
+	string cartaSeleccionada=cartaInvertida;
+	string cartaComputadora=cartaInvertida;
+	
+	int coord_x_aux=0;
+	int coord_y_aux=0;
+	
+	int coord_x_mazo=50;
+	int coord_y_mazo=8;
+	
+	int coord_x_jugador=33;
+	int coord_y_jugador=17;
+	
+	int coord_x_computadora=65;
+	int coord_y_computadora=17;
+
+	//Puntajes generales y parciales
+	int puntosTotalJugador=0;
+	int puntosTotalComputadora=0;
+	
+	int puntosJugador=0;
+	int puntosComputadora=0;
+	
+	float acumuladoJugador=0;
+	float acumuladoComputadora=0;
+	
+	int cartasTotales=0;
+	int numeroPartida=1;
+	
+	//Booleanos para controlar turnos y juego de la PC
+	bool juegoUsuario=true;
+	bool pcJuega=false;
+	bool sePlantaUsuario=false;
+	bool sePlantaPC=false;
+	
+	bool reiniciarJuego=false;
+	
+	bool ganaUsuario=false;
+	
+	string mensajePC="         ";
+	string mensajeUsuario="         ";
+
+	int contadorTurnos=1;
+
+	//Loop principal del juego
+	while (play){
+		
+		gotoxy(1,33);
+		cout<<"Cartas: "<<cartasTotales<<"           ";
+		
+		gotoxy(1,1);
+		
+		//Reiniciar variables del juego
+		if (reiniciarJuego){
+			
+			if (ganaUsuario){				
+				puntosJugador++;
+			} else {
+				puntosComputadora++;
+			}
+			
+			contadorTurnos++;	
+			
+			if (contadorTurnos%2==0){				
+				juegoUsuario=false;				
+			} else {				
+				juegoUsuario=true;				
+			}
+			
+			acumuladoComputadora=0;
+			acumuladoJugador=0;
+			
+			sePlantaPC=false;
+			sePlantaUsuario=false;
+			
+			mensajeUsuario="         ";
+			mensajePC="         ";
+			
+			pcJuega=false;
+			ganaUsuario=false;
+			
+			reiniciarJuego=false;
+		}
+		
+		//Se reinicia el juego y todos los indicadores cuando ya salieron todas las cartas
+		if (cartasTotales==40){
+			
+			if(!reiniciarJuego){
+				
+				if (acumuladoJugador>acumuladoComputadora){
+					
+					puntosJugador++;
+					
+				} else {
+					
+					puntosComputadora++;
+				}
+			}
+			
+			for(int i=0;i<4;i++){
+				for (int j=0;j<10;j++){
+					cartas[i][j]=false;			
+				}
+			}
+			
+			if (puntosJugador>puntosComputadora){		
+				
+				puntosTotalJugador++;
+				
+			} else {
+				
+				puntosTotalComputadora++;
+			}
+			
+			reiniciarJuego=false;
+			
+			pcJuega=false;
+			ganaUsuario=false;
+			
+			sePlantaPC=false;
+			sePlantaUsuario=false;
+			
+			mensajeUsuario="         ";
+			mensajePC="         ";
+			
+			puntosJugador=0;
+			puntosComputadora=0;
+			
+			acumuladoComputadora=0;
+			acumuladoJugador=0;
+	
+			cartasTotales=0;
+			numeroPartida++;		
+			
+			cartaSeleccionada=cartaInvertida;
+			cartaComputadora=cartaInvertida;
+			
+			contadorTurnos=1;
+		}
+		
+		//Indico si el usuario o la PC se planto
+		if (!juegoUsuario){
+			
+			mensajePC="MI TURNO ";
+			
+		} else {
+			
+			mensajePC="TU TURNO ";
+		}
+		
+		if (sePlantaUsuario){
+			
+			mensajeUsuario="ME PLANTO";				
+		} 
+		
+		if (sePlantaPC){
+			
+			mensajePC="ME PLANTO";
+		}
+		
+				
+		//Pantalla principal o interfaz grafica
+		cout<<" ----------------------------------------------------------------------------------------------------------- "<<endl;	
+		cout<<"  Cada partida se juega hasta que se acabe el mazo  || TOTAL    JUGADOR: "<<puntosTotalJugador<<"  PC: "<<puntosTotalComputadora<<"            | "<<"PARTIDA # "<<numeroPartida<<endl;	
+		cout<<" ----------------------------------------------------------------------------------------------------------- "<<endl;		
+		cout<<" P= Pedir carta         E=Salir    | "<<" JUGADOR parcial: "<<puntosJugador<<"                     | "<<"Acumulado jugador: "<<acumuladoJugador<<"   "<<endl;
+		cout<<" L= Plantarse           C=Juego PC | "<<" PC parcial: "<<puntosComputadora<<"                          | "<<"Acumulado computadora: "<<acumuladoComputadora<<"   "<<endl;
+		cout<<" ----------------------------------------------------------------------------------------------------------- "<<endl;
+		cout<<"   *                                                                                                     *   "<<endl;
+		cout<<"   *                                                                                                     *   "<<endl;
+		cout<<"   *                                                                                                     *   "<<endl;
+		cout<<"   *                                                                                                     *   "<<endl;
+		cout<<"   *                                                                                                     *   "<<endl;
+		cout<<"   *                                                                                                     *   "<<endl;
+		cout<<"   *                                                                                                     *   "<<endl;
+		cout<<"   *                                                                                                     *   "<<endl;
+		cout<<"   *                                                                                                     *   "<<endl;
+		cout<<"    *                                                                                                   *    "<<endl;
+		cout<<"     *                                                                                                 *     "<<endl;
+		cout<<"      **                                                                                             **      "<<endl;
+		cout<<"        ***                                                                                       ***        "<<endl;
+		cout<<"           ***                                                                                 ***           "<<endl;
+		cout<<"             ***                                                                             ***             "<<endl;
+		cout<<"                ****                                                                     ****                "<<endl;
+		cout<<"                   ****                                                               ****                   "<<endl;
+		cout<<"                      ****                                                         ****                      "<<endl;
+		cout<<"                         ****                                                   ****                         "<<endl;
+		cout<<"                           ****                                               ****                         "<<endl;
+		cout<<"                             ***** "<<mensajeUsuario<<"                    "<<mensajePC<<"  *****                           "<<endl;
+		cout<<"                                  *******                            *******                                 "<<endl;
+		cout<<"                                         ****************************                                        "<<endl;
+		cout<<" Si hay empate de puntos acumulados o puntos parciales, gana la computadora                                  "<<endl;
+		
+		//Estructuras switch-case
+		if (kbhit()){
+			
+			char tecla=getch();
+			
+			switch (tecla){
+				
+			case 'E':
+				
+				play=false;
+				break;
+				
+			case 'L':
+				
+				sePlantaUsuario=true;
+				juegoUsuario=false;
+				break;
+				
+			case 'C':
+				
+				if (!juegoUsuario){
+									
+					//Si la computadora empieza el turno, la IA decide hasta cuando pedir cartas o plantarse
+					if (acumuladoJugador==0){
+						
+						//IA de la computadora para decidir si pedir otra carta o plantarse
+						for (int i=0;i<15;i++){
+							
+							if (probabilidades[0][i]==acumuladoComputadora){
+								valorProb=probabilidades[1][i];
+								break;
+							}
+						}
+						
+						numero=rand()%100+1;
+						
+						if (numero<valorProb){
+							
+							pcJuega=true;
+							
+						} else {
+							
+							pcJuega=false;
+						}
+					//Si el usuario ya juego primero, la PC va a pedir cartas por lo menos hasta superar el valor que llego el usuario							
+					} else {
+						
+						if (acumuladoComputadora<acumuladoJugador){
+							
+							pcJuega=true;
+						} 
+					}
+					
+					if (pcJuega){
+						
+						do{
+							fila=rand()%4;
+							columna=rand()%10;
+							
+						} while(cartas[fila][columna]);
+						
+						cartasTotales++;			
+						
+						cartaComputadora=mazo[fila][columna];
+						cartas[fila][columna]=true;
+						
+						if (columna<7){						
+							acumuladoComputadora+=columna+1;
+						} else {
+							acumuladoComputadora+=0.5;
+						}	
+						
+					} else {
+						
+						sePlantaPC=true;
+						juegoUsuario=true;
+					}
+					
+					if (acumuladoComputadora>7.5){
+						
+						ganaUsuario=true;
+						reiniciarJuego=true;
+						
+					} else {
+						
+						if(acumuladoComputadora==7.5 || (sePlantaUsuario && acumuladoComputadora>=acumuladoJugador)){
+							
+							ganaUsuario=false;
+							reiniciarJuego=true;
+						} 			
+					}
+				}	
+					
+				break;
+			
+			case 'P':
+				
+				if (juegoUsuario){
+					
+					do{
+						fila=rand()%4;
+						columna=rand()%10;
+						
+					} while(cartas[fila][columna]);
+					
+					cartasTotales++;
+					
+					cartaSeleccionada=mazo[fila][columna];
+					cartas[fila][columna]=true;	
+					
+					if (columna<7){
+						
+						acumuladoJugador+=columna+1;
+						
+					} else {
+						acumuladoJugador+=0.5;
+					}
+					
+					if (acumuladoJugador>7.5){
+						
+						ganaUsuario=false;
+						reiniciarJuego=true;
+						
+					} else {
+						
+						if (sePlantaPC && (acumuladoJugador>acumuladoComputadora)){
+							
+							ganaUsuario=true;
+							reiniciarJuego=true;
+						}
+					}					
+				}				
+				break;								
+			}			
+		}
+		
+		//Mostrar la carta del jugador
+		coord_x_aux=coord_x_jugador;
+		coord_y_aux=coord_y_jugador;
+		
+		for (int i=0;i<cartaSeleccionada.length();i++){
+			
+			gotoxy(coord_x_jugador,coord_y_jugador);
+			cout<<cartaSeleccionada[i];
+			
+			if (cartaSeleccionada[i]=='\n'){
+				
+				coord_y_jugador++;
+				coord_x_jugador=coord_x_aux;
+				
+			} else {
+				coord_x_jugador++;
+			}
+		}
+		
+		coord_y_jugador=coord_y_aux;
+		
+		//Mostrar la carta de la computadora
+		coord_x_aux=coord_x_computadora;
+		coord_y_aux=coord_y_computadora;
+		
+		for (int i=0;i<cartaComputadora.length();i++){
+			
+			gotoxy(coord_x_computadora,coord_y_computadora);
+			cout<<cartaComputadora[i];
+			
+			if (cartaComputadora[i]=='\n'){
+				
+				coord_y_computadora++;
+				coord_x_computadora=coord_x_aux;
+				
+			} else {
+				coord_x_computadora++;
+			}
+		}
+		
+		coord_y_computadora=coord_y_aux;
+		
+		//Mostrar el mazo
+		coord_x_aux=coord_x_mazo;
+		coord_y_aux=coord_y_mazo;
+		
+		for (int i=0;i<cartaInvertida.length();i++){
+			
+			gotoxy(coord_x_mazo,coord_y_mazo);
+			cout<<cartaInvertida[i];
+			
+			if (cartaInvertida[i]=='\n'){
+				
+				coord_y_mazo++;
+				coord_x_mazo=coord_x_aux;
+				
+			} else {
+				coord_x_mazo++;
+			}
+		}
+		
+		coord_y_mazo=coord_y_aux;
+		
+		//Retraso antes de volver al loop principal	
+		t1=clock();
+		
+		while ((t2-t1)<tiempo){
+			
+			t2=clock();
+		}		
+		t2=0;
+	}
+
+	return 0;
+}
