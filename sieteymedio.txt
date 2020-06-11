@@ -213,9 +213,6 @@ int main (int argc, char *argv[]) {
 	//Loop principal del juego
 	while (play){
 		
-		gotoxy(1,33);
-		cout<<"Cartas: "<<cartasTotales<<"           ";
-		
 		gotoxy(1,1);
 		
 		//Reiniciar variables del juego
@@ -334,7 +331,6 @@ int main (int argc, char *argv[]) {
 		cout<<" P= Pedir carta         E=Salir    | "<<" JUGADOR parcial: "<<puntosJugador<<"                     | "<<"Acumulado jugador: "<<acumuladoJugador<<"   "<<endl;
 		cout<<" L= Plantarse           C=Juego PC | "<<" PC parcial: "<<puntosComputadora<<"                          | "<<"Acumulado computadora: "<<acumuladoComputadora<<"   "<<endl;
 		cout<<" ----------------------------------------------------------------------------------------------------------- "<<endl;
-		cout<<"   *                                                                                                     *   "<<endl;
 		cout<<"   *                                                                                                     *   "<<endl;
 		cout<<"   *                                                                                                     *   "<<endl;
 		cout<<"   *                                                                                                     *   "<<endl;
